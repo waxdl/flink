@@ -19,22 +19,39 @@
 package org.apache.flink.connector.jdbc.dialect;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-/** Default JDBC dialects. */
 public final class JdbcDialects {
+    public static JdbcDialect jdbcDialect;
+    public static String checkUrl;
+    private static final List<JdbcDialect> DIALECTS = Arrays.asList(
+            new DerbyDialect(),
+            new MySQLDialect(),
+            new PostgresDialect(),
+            new TdSqlPgDialect(),
+            new OracleSQLDialect(),
+            new IgniteDialect(),
+            new OceanBaseOracleSQLDialect());
 
-    private static final List<JdbcDialect> DIALECTS =
-            Arrays.asList(new DerbyDialect(), new MySQLDialect(), new PostgresDialect());
+    public JdbcDialects() {
+    }
 
-    /** Fetch the JdbcDialect class corresponding to a given database url. */
     public static Optional<JdbcDialect> get(String url) {
-        for (JdbcDialect dialect : DIALECTS) {
-            if (dialect.canHandle(url)) {
-                return Optional.of(dialect);
+        checkUrl = url;
+        Iterator var1 = DIALECTS.iterator();
+
+        JdbcDialect dialect;
+        do {
+            if (!var1.hasNext()) {
+                return Optional.empty();
             }
-        }
-        return Optional.empty();
+
+            dialect = (JdbcDialect) var1.next();
+        } while (!dialect.canHandle(url));
+
+        jdbcDialect = dialect;
+        return Optional.of(dialect);
     }
 }
