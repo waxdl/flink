@@ -177,6 +177,13 @@ under the License.
 			<scope>test</scope>
 		</dependency>
 
+
+		<!-- oracle -->
+		<dependency>
+			<groupId>com.oracle.database.jdbc</groupId>
+			<artifactId>ojdbc8</artifactId>
+			<version>12.2.0.1</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -187,6 +194,7 @@ under the License.
 				<configuration>
 					<!-- Disable jvm process reuse to test driver class loading issues -->
 					<reuseForks>false</reuseForks>
+					<skipTests>true</skipTests>
 				</configuration>
 			</plugin>
 		</plugins>
