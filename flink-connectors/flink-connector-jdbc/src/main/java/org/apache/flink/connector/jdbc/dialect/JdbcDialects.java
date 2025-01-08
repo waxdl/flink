@@ -33,7 +33,8 @@ public final class JdbcDialects {
             new TdSqlPgDialect(),
             new OracleSQLDialect(),
             new IgniteDialect(),
-            new OceanBaseOracleSQLDialect());
+            new OceanBaseOracleSQLDialect(),
+            new DmOracleSQLDialect());
 
     public JdbcDialects() {
     }
