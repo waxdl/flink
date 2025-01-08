@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import org.apache.flink.connector.jdbc.internal.converter.IgniteRowConverter;
 import org.apache.flink.connector.jdbc.internal.converter.JdbcRowConverter;
 
-import org.apache.flink.shaded.guava30.com.google.common.base.Joiner;
+import org.apache.flink.shaded.guava18.com.google.common.base.Joiner;
 
 import org.apache.flink.table.types.logical.LogicalTypeRoot;
 import org.apache.flink.table.types.logical.RowType;
