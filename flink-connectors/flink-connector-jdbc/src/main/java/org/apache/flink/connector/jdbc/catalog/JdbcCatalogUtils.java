@@ -20,6 +20,7 @@ package org.apache.flink.connector.jdbc.catalog;
 
 import org.apache.flink.connector.jdbc.dialect.JdbcDialect;
 import org.apache.flink.connector.jdbc.dialect.JdbcDialects;
+import org.apache.flink.connector.jdbc.dialect.OracleSQLDialect;
 import org.apache.flink.connector.jdbc.dialect.PostgresDialect;
 
 import static org.apache.flink.util.Preconditions.checkArgument;
@@ -33,7 +34,7 @@ public class JdbcCatalogUtils {
     public static void validateJdbcUrl(String url) {
         String[] parts = url.trim().split("\\/+");
 
-        checkArgument(parts.length == 2);
+//        checkArgument(parts.length == 2);
     }
 
     /** Create catalog instance from given information. */
@@ -47,6 +48,8 @@ public class JdbcCatalogUtils {
 
         if (dialect instanceof PostgresDialect) {
             return new PostgresCatalog(catalogName, defaultDatabase, username, pwd, baseUrl);
+        } else if (dialect instanceof OracleSQLDialect) {
+            return new OracleCatalog(catalogName, defaultDatabase, username, pwd, baseUrl);
         } else {
             throw new UnsupportedOperationException(
                     String.format("Catalog for '%s' is not supported yet.", dialect));

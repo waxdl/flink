@@ -18,6 +18,8 @@
 
 package org.apache.flink.connector.jdbc.statement;
 
+import javax.sql.rowset.serial.SerialClob;
+
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Date;
@@ -134,6 +136,18 @@ public class FieldNamedPreparedStatementImpl implements FieldNamedPreparedStatem
             statement.setString(index, x);
         }
     }
+
+    @Override
+    public void setClob(int fieldIndex, String x) throws SQLException {
+        int[] var3 = this.indexMapping[fieldIndex];
+        int var4 = var3.length;
+
+        for(int var5 = 0; var5 < var4; ++var5) {
+            int index = var3[var5];
+            this.statement.setClob(index, new SerialClob(x.toCharArray()));
+        }
+    }
+
 
     @Override
     public void setBytes(int fieldIndex, byte[] x) throws SQLException {
