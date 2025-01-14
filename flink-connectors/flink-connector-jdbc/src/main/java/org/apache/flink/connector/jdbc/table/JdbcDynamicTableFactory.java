@@ -162,6 +162,12 @@ public class JdbcDynamicTableFactory implements DynamicTableSourceFactory, Dynam
                     .defaultValue(3)
                     .withDescription("The max retry times if writing records to database failed.");
 
+    private static final ConfigOption<String> QUERY_WHERE_CONDITION =
+            ConfigOptions.key("query.where.condition")
+                    .stringType()
+                    .noDefaultValue()
+                    .withDescription("must sql where condition.");
+
     @Override
     public DynamicTableSink createDynamicTableSink(Context context) {
         final FactoryUtil.TableFactoryHelper helper =
@@ -191,11 +197,13 @@ public class JdbcDynamicTableFactory implements DynamicTableSourceFactory, Dynam
         validateConfigOptions(config);
         TableSchema physicalSchema =
                 TableSchemaUtils.getPhysicalSchema(context.getCatalogTable().getSchema());
-        return new JdbcDynamicTableSource(
+
+        JdbcDynamicTableSource jdbcDynamicTableSource = new JdbcDynamicTableSource(
                 getJdbcOptions(helper.getOptions()),
                 getJdbcReadOptions(helper.getOptions()),
                 getJdbcLookupOptions(helper.getOptions()),
                 physicalSchema);
+        return jdbcDynamicTableSource;
     }
 
     private JdbcOptions getJdbcOptions(ReadableConfig readableConfig) {
@@ -229,8 +237,15 @@ public class JdbcDynamicTableFactory implements DynamicTableSourceFactory, Dynam
             builder.setNumPartitions(readableConfig.get(SCAN_PARTITION_NUM));
         }
         readableConfig.getOptional(SCAN_FETCH_SIZE).ifPresent(builder::setFetchSize);
-        builder.setAutoCommit(readableConfig.get(SCAN_AUTO_COMMIT));
-        return builder.build();
+        builder.setAutoCommit((Boolean)readableConfig.get(SCAN_AUTO_COMMIT));
+        Optional<String> queryWhereCondition = readableConfig.getOptional(QUERY_WHERE_CONDITION);
+        if (queryWhereCondition.isPresent()) {
+            System.out.println("queryWhereCondition = " + queryWhereCondition);
+            builder.setQueryWhereCondition((String)queryWhereCondition.get());
+        }
+
+        return builder.buildWhereCondition();
+
     }
 
     private JdbcLookupOptions getJdbcLookupOptions(ReadableConfig readableConfig) {
@@ -295,6 +310,7 @@ public class JdbcDynamicTableFactory implements DynamicTableSourceFactory, Dynam
         optionalOptions.add(SINK_MAX_RETRIES);
         optionalOptions.add(FactoryUtil.SINK_PARALLELISM);
         optionalOptions.add(MAX_RETRY_TIMEOUT);
+        optionalOptions.add(QUERY_WHERE_CONDITION);
         return optionalOptions;
     }
 
