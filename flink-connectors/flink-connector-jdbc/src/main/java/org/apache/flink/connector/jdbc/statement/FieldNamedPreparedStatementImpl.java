@@ -20,7 +20,10 @@ package org.apache.flink.connector.jdbc.statement;
 
 import javax.sql.rowset.serial.SerialClob;
 
+import java.io.Reader;
+import java.io.StringReader;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -30,8 +33,12 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import javax.sql.rowset.serial.SerialClob;
+import org.apache.flink.util.Preconditions;
 
 import static org.apache.flink.util.Preconditions.checkArgument;
 import static org.apache.flink.util.Preconditions.checkNotNull;
@@ -132,8 +139,40 @@ public class FieldNamedPreparedStatementImpl implements FieldNamedPreparedStatem
 
     @Override
     public void setString(int fieldIndex, String x) throws SQLException {
-        for (int index : indexMapping[fieldIndex]) {
-            statement.setString(index, x);
+        String driverUrl = this.statement.getConnection().getMetaData().getURL();
+        int[] var4;
+        int var5;
+        int var6;
+        int index;
+        if (driverUrl != null && driverUrl.contains("oceanbase")) {
+            var4 = this.indexMapping[fieldIndex];
+            var5 = var4.length;
+
+            for(var6 = 0; var6 < var5; ++var6) {
+                index = var4[var6];
+                this.statement.setString(index, x);
+            }
+        } else {
+            var4 = this.indexMapping[fieldIndex];
+            var5 = var4.length;
+
+            for (var6 = 0; var6 < var5; ++var6) {
+                index = var4[var6];
+                if (x.getBytes(StandardCharsets.UTF_8).length > 4000) {
+                    Reader clobReader = new StringReader(x);
+                    this.statement.setCharacterStream(index, clobReader);
+                    System.out.println("clob 转换");
+
+                    try {
+                        clobReader.close();
+                    } catch (Exception var10) {
+                        System.out.println("clob 转换失败");
+                        var10.printStackTrace(System.out);
+                    }
+                } else {
+                    this.statement.setString(index, x);
+                }
+            }
         }
     }
 
@@ -212,6 +251,13 @@ public class FieldNamedPreparedStatementImpl implements FieldNamedPreparedStatem
                     parameterMap.containsKey(fieldName),
                     fieldName + " doesn't exist in the parameters of SQL statement: " + sql);
             indexMapping[i] = parameterMap.get(fieldName).stream().mapToInt(v -> v).toArray();
+        }
+
+        Iterator var8 = connection.getClientInfo().entrySet().iterator();
+
+        while(var8.hasNext()) {
+            Entry<Object, Object> objectObjectEntry = (Entry)var8.next();
+            System.out.println("objectObjectEntry = " + objectObjectEntry.getValue() + " " + objectObjectEntry.getKey());
         }
 
         return new FieldNamedPreparedStatementImpl(

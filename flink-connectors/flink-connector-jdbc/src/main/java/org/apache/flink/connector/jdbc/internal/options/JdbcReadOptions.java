@@ -121,6 +121,7 @@ public class JdbcReadOptions implements Serializable {
     /** Builder of {@link JdbcReadOptions}. */
     public static class Builder {
         protected String query;
+        protected String queryWhereCondition;
         protected String partitionColumnName;
         protected Long partitionLowerBound;
         protected Long partitionUpperBound;
@@ -128,12 +129,16 @@ public class JdbcReadOptions implements Serializable {
 
         protected int fetchSize = 0;
         protected boolean autoCommit = true;
-        protected String queryWhereCondition;
 
 
         /** optional, SQL query statement for this JDBC source. */
         public Builder setQuery(String query) {
             this.query = query;
+            return this;
+        }
+
+        public Builder setQueryWhereCondition(String queryWhereCondition) {
+            this.queryWhereCondition = queryWhereCondition;
             return this;
         }
 
@@ -176,11 +181,6 @@ public class JdbcReadOptions implements Serializable {
         /** optional, whether to set auto commit on the JDBC driver. */
         public Builder setAutoCommit(boolean autoCommit) {
             this.autoCommit = autoCommit;
-            return this;
-        }
-
-        public Builder setQueryWhereCondition(String queryWhereCondition) {
-            this.queryWhereCondition = queryWhereCondition;
             return this;
         }
 
