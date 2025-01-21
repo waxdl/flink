@@ -159,5 +159,11 @@ public class JdbcConnectorOptions {
                     .defaultValue(3)
                     .withDescription("The max retry times if writing records to database failed.");
 
+    public static final ConfigOption<String> QUERY_WHERE_CONDITION =
+            ConfigOptions.key("query.where.condition")
+                    .stringType()
+                    .noDefaultValue()
+                    .withDescription("must sql where condition.");
+
     private JdbcConnectorOptions() {}
 }

@@ -39,6 +39,9 @@ import org.apache.flink.util.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.flink.connector.jdbc.table.JdbcConnectorOptions.*;
+
+
 public class OracleCatalog extends AbstractJdbcCatalog {
     private static final Logger LOG = LoggerFactory.getLogger(OracleCatalog.class);
     public static final String DEFAULT_DATABASE = "oracle-catalog";
@@ -192,10 +195,10 @@ public class OracleCatalog extends AbstractJdbcCatalog {
                 TableSchema tableSchema = tableBuilder.build();
                 Map<String, String> props = new HashMap();
                 props.put(FactoryUtil.CONNECTOR.key(), "jdbc");
-                props.put(JdbcDynamicTableFactory.URL.key(), dbUrl);
-                props.put(JdbcDynamicTableFactory.TABLE_NAME.key(), tablePath.getObjectName());
-                props.put(JdbcDynamicTableFactory.USERNAME.key(), this.username);
-                props.put(JdbcDynamicTableFactory.PASSWORD.key(), this.pwd);
+                props.put(URL.key(), dbUrl);
+                props.put(TABLE_NAME.key(), tablePath.getObjectName());
+                props.put(USERNAME.key(), this.username);
+                props.put(PASSWORD.key(), this.pwd);
                 CatalogTableImpl var17 = new CatalogTableImpl(tableSchema, props, "");
                 return var17;
             } catch (Throwable var27) {
