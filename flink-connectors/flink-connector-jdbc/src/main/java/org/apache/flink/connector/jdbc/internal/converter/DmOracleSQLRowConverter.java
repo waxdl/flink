@@ -1,5 +1,7 @@
 package org.apache.flink.connector.jdbc.internal.converter;
 
+import dm.jdbc.driver.DmdbNClob;
+
 import org.apache.flink.table.data.DecimalData;
 import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.data.TimestampData;
@@ -93,7 +95,7 @@ public class DmOracleSQLRowConverter extends AbstractJdbcRowConverter {
             case VARCHAR:
                 return (val) -> {
                     return val instanceof CHAR ? StringData.fromString(((CHAR) val).getString()) : (val instanceof Clob ? StringData
-                            .fromString(((OracleClob) val).stringValue()) : StringData.fromString((String) val));
+                            .fromString(((DmdbNClob) val).getSubString(1, (int)((DmdbNClob) val).length())) : StringData.fromString((String) val));
                 };
             case BINARY:
             case VARBINARY:
