@@ -1,10 +1,5 @@
 package org.apache.flink.connector.jdbc.dialect;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.flink.connector.jdbc.internal.converter.JdbcRowConverter;
@@ -12,7 +7,16 @@ import org.apache.flink.connector.jdbc.internal.converter.OracleSQLRowConverter;
 import org.apache.flink.table.types.logical.LogicalTypeRoot;
 import org.apache.flink.table.types.logical.RowType;
 
-public class OceanBaseOracleSQLDialect extends AbstractDialect {
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+/**
+ * OceanBase merge into 性能太慢，改用 insert，需要在上层控制哪些表 使用 insert
+ * url示例: jdbc:oceanbase://172.19.9.9:2883/xlc?onlyInsert=true
+ */
+public class OceanBaseOracleSQLInsertDialect extends AbstractDialect {
     private static final long serialVersionUID = 1L;
     private static final String SQL_DEFAULT_PLACEHOLDER = " :";
     private static final int MAX_TIMESTAMP_PRECISION = 6;
@@ -20,12 +24,12 @@ public class OceanBaseOracleSQLDialect extends AbstractDialect {
     private static final int MAX_DECIMAL_PRECISION = 65;
     private static final int MIN_DECIMAL_PRECISION = 1;
 
-    public OceanBaseOracleSQLDialect() {
+    public OceanBaseOracleSQLInsertDialect() {
     }
 
     @Override
     public boolean canHandle(String url) {
-        return url.startsWith("jdbc:oceanbase:") && !url.contains("onlyInsert=true");
+        return url.startsWith("jdbc:oceanbase:") && url.contains("onlyInsert=true");
     }
 
     @Override
@@ -53,7 +57,28 @@ public class OceanBaseOracleSQLDialect extends AbstractDialect {
             String tableName,
             String[] fieldNames,
             String[] uniqueKeyFields) {
-        return Optional.of(this.getUpsertStatement(tableName, fieldNames, uniqueKeyFields, true));
+        return Optional.of(this.getInsertStatement(tableName, fieldNames));
+    }
+
+    /**
+     * 生成 INSERT 语句
+     */
+    private String getInsertStatement(String tableName, String[] fieldNames) {
+        StringBuilder insertIntoSql = new StringBuilder();
+        insertIntoSql
+                .append("INSERT INTO ")
+                .append(tableName)
+                .append(" (")
+                .append((String) Arrays.stream(fieldNames).map((col) -> {
+                    return this.quoteIdentifier(col);
+                }).collect(Collectors.joining(",")))
+                .append(") VALUES (")
+                .append((String) Arrays.stream(fieldNames).map((col) -> {
+                    return this.wrapperPlaceholder(col);
+                }).collect(Collectors.joining(", ")))
+                .append(")");
+
+        return insertIntoSql.toString();
     }
 
     public String getUpsertStatement(
@@ -133,7 +158,7 @@ public class OceanBaseOracleSQLDialect extends AbstractDialect {
 
     @Override
     public String dialectName() {
-        return "OceanBaseOracleSQLDialect";
+        return "OceanBaseOracleSQLInsertDialect";
     }
 
     @Override
