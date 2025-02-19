@@ -18,12 +18,19 @@
 
 package org.apache.flink.connector.jdbc.dialect;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
 public final class JdbcDialects {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcDialects.class);
+
+
     public static JdbcDialect jdbcDialect;
     public static String checkUrl;
     private static final List<JdbcDialect> DIALECTS = Arrays.asList(
@@ -34,6 +41,7 @@ public final class JdbcDialects {
             new OracleSQLDialect(),
             new IgniteDialect(),
             new OceanBaseOracleSQLDialect(),
+            new OceanBaseOracleSQLInsertDialect(),
             new DmOracleSQLDialect());
 
     public JdbcDialects() {
@@ -51,6 +59,8 @@ public final class JdbcDialects {
 
             dialect = (JdbcDialect) var1.next();
         } while (!dialect.canHandle(url));
+
+//        LOG.info("================== dialect = {} ", dialect.dialectName());
 
         jdbcDialect = dialect;
         return Optional.of(dialect);
