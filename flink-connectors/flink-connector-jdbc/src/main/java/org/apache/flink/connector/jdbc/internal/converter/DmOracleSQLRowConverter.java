@@ -2,6 +2,8 @@ package org.apache.flink.connector.jdbc.internal.converter;
 
 import dm.jdbc.driver.DmdbNClob;
 
+import dm.jdbc.driver.DmdbTimestamp;
+
 import org.apache.flink.table.data.DecimalData;
 import org.apache.flink.table.data.StringData;
 import org.apache.flink.table.data.TimestampData;
@@ -89,7 +91,7 @@ public class DmOracleSQLRowConverter extends AbstractJdbcRowConverter {
             case TIMESTAMP_WITHOUT_TIME_ZONE:
                 return (val) -> {
                     return val instanceof LocalDateTime ? TimestampData.fromLocalDateTime((LocalDateTime) val) : TimestampData
-                            .fromTimestamp((Timestamp) val);
+                            .fromTimestamp(DmdbTimestamp.valueOf((Date)val));
                 };
             case CHAR:
             case VARCHAR:
