@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.flink.connector.jdbc.internal.converter.JdbcRowConverter;
+import org.apache.flink.connector.jdbc.internal.converter.OceanBaseOracleSQLRowConverter;
 import org.apache.flink.connector.jdbc.internal.converter.OracleSQLRowConverter;
 import org.apache.flink.table.types.logical.LogicalTypeRoot;
 import org.apache.flink.table.types.logical.RowType;
@@ -30,7 +31,7 @@ public class OceanBaseOracleSQLDialect extends AbstractDialect {
 
     @Override
     public JdbcRowConverter getRowConverter(RowType rowType) {
-        return new OracleSQLRowConverter(rowType);
+        return new OceanBaseOracleSQLRowConverter(rowType);
     }
 
     @Override

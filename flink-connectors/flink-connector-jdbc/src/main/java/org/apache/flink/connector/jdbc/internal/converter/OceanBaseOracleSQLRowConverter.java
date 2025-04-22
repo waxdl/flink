@@ -41,13 +41,34 @@ public class OceanBaseOracleSQLRowConverter extends AbstractJdbcRowConverter {
                     return null;
                 };
             case BOOLEAN:
-            case FLOAT:
-            case DOUBLE:
             case INTERVAL_YEAR_MONTH:
             case INTERVAL_DAY_TIME:
                 return (val) -> {
                     return val;
                 };
+            case FLOAT:
+                return (val) -> {
+                    if (val instanceof BigDecimal) {
+                        return ((BigDecimal) val).floatValue();
+                    } else if (val instanceof Number) {
+                        return ((Number) val).floatValue();
+                    } else {
+                        //throw new IllegalArgumentException("Cannot convert " + val + " to Float");
+                        return val;
+                    }
+                };
+            case DOUBLE:
+                return (val) -> {
+                    if (val instanceof BigDecimal) {
+                        return ((BigDecimal) val).doubleValue();
+                    } else if (val instanceof Number) {
+                        return ((Number) val).doubleValue();
+                    } else {
+                        //throw new IllegalArgumentException("Cannot convert " + val + " to Double");
+                        return val;
+                    }
+                };
+
             case TINYINT:
                 return (val) -> {
                     return ((Integer) val).byteValue();
