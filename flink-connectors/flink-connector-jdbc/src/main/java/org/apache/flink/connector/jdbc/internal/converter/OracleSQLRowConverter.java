@@ -77,8 +77,15 @@ public class OracleSQLRowConverter extends AbstractJdbcRowConverter {
                 };
             case DATE:
                 return (val) -> {
-                    return (int) ((Date) val).toLocalDate().toEpochDay();
+                    if (val instanceof java.sql.Date) {
+                        return (int) ((java.sql.Date) val).toLocalDate().toEpochDay();
+                    } else if (val instanceof java.sql.Timestamp) {
+                        return (int) ((java.sql.Timestamp) val).toLocalDateTime().toLocalDate().toEpochDay();
+                    } else {
+                        throw new IllegalArgumentException("Unsupported DATE type: " + val.getClass());
+                    }
                 };
+
             case TIME_WITHOUT_TIME_ZONE:
                 return (val) -> {
                     return (int) (((Time) val).toLocalTime().toNanoOfDay() / 1000000L);
