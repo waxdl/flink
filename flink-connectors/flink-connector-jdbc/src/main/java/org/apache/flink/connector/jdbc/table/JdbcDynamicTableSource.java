@@ -38,6 +38,8 @@ import org.apache.flink.table.utils.TableSchemaUtils;
 import org.apache.flink.util.Preconditions;
 
 import java.util.Objects;
+import java.util.Optional;
+
 
 /** A {@link DynamicTableSource} for JDBC. */
 @Internal
@@ -105,7 +107,10 @@ public class JdbcDynamicTableSource
         String query =
                 dialect.getSelectFromStatement(
                         options.getTableName(), physicalSchema.getFieldNames(), new String[0]);
-        if (readOptions.getPartitionColumnName().isPresent()) {
+        Optional<String> queryWhereCondition = this.readOptions.getQueryWhereCondition();
+        if (queryWhereCondition.isPresent()) {
+            query = query + " " + (String)queryWhereCondition.get();
+        } else if (readOptions.getPartitionColumnName().isPresent()) {
             long lowerBound = readOptions.getPartitionLowerBound().get();
             long upperBound = readOptions.getPartitionUpperBound().get();
             int numPartitions = readOptions.getNumPartitions().get();
@@ -113,7 +118,7 @@ public class JdbcDynamicTableSource
                     new JdbcNumericBetweenParametersProvider(lowerBound, upperBound)
                             .ofBatchNum(numPartitions));
             query +=
-                    " WHERE "
+                    " WHERE 1=1 and "
                             + dialect.quoteIdentifier(readOptions.getPartitionColumnName().get())
                             + " BETWEEN ? AND ?";
         }
@@ -125,6 +130,8 @@ public class JdbcDynamicTableSource
         builder.setRowConverter(dialect.getRowConverter(rowType));
         builder.setRowDataTypeInfo(
                 runtimeProviderContext.createTypeInformation(physicalSchema.toRowDataType()));
+
+        System.out.println("query = " + query);
 
         return InputFormatProvider.of(builder.build());
     }

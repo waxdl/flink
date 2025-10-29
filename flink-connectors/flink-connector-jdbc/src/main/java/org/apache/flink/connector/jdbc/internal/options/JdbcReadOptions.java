@@ -33,15 +33,27 @@ public class JdbcReadOptions implements Serializable {
 
     private final int fetchSize;
     private final boolean autoCommit;
+    private final String queryWhereCondition;
 
     private JdbcReadOptions(
-            String query,
-            String partitionColumnName,
-            Long partitionLowerBound,
-            Long partitionUpperBound,
-            Integer numPartitions,
-            int fetchSize,
-            boolean autoCommit) {
+                String query,
+                String partitionColumnName,
+                Long partitionLowerBound,
+                Long partitionUpperBound,
+                Integer numPartitions,
+                int fetchSize,
+                boolean autoCommit) {
+        this.query = query;
+        this.partitionColumnName = partitionColumnName;
+        this.partitionLowerBound = partitionLowerBound;
+        this.partitionUpperBound = partitionUpperBound;
+        this.numPartitions = numPartitions;
+        this.queryWhereCondition = null;
+        this.fetchSize = fetchSize;
+        this.autoCommit = autoCommit;
+    }
+
+    private JdbcReadOptions(String query, String partitionColumnName, Long partitionLowerBound, Long partitionUpperBound, Integer numPartitions, int fetchSize, boolean autoCommit, String queryWhereCondition) {
         this.query = query;
         this.partitionColumnName = partitionColumnName;
         this.partitionLowerBound = partitionLowerBound;
@@ -50,6 +62,7 @@ public class JdbcReadOptions implements Serializable {
 
         this.fetchSize = fetchSize;
         this.autoCommit = autoCommit;
+        this.queryWhereCondition = queryWhereCondition;
     }
 
     public Optional<String> getQuery() {
@@ -80,6 +93,10 @@ public class JdbcReadOptions implements Serializable {
         return autoCommit;
     }
 
+    public Optional<String> getQueryWhereCondition() {
+        return Optional.ofNullable(queryWhereCondition);
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -94,7 +111,8 @@ public class JdbcReadOptions implements Serializable {
                     && Objects.equals(partitionUpperBound, options.partitionUpperBound)
                     && Objects.equals(numPartitions, options.numPartitions)
                     && Objects.equals(fetchSize, options.fetchSize)
-                    && Objects.equals(autoCommit, options.autoCommit);
+                    && Objects.equals(autoCommit, options.autoCommit)
+                    && Objects.equals(queryWhereCondition, options.queryWhereCondition);
         } else {
             return false;
         }
@@ -103,6 +121,7 @@ public class JdbcReadOptions implements Serializable {
     /** Builder of {@link JdbcReadOptions}. */
     public static class Builder {
         protected String query;
+        protected String queryWhereCondition;
         protected String partitionColumnName;
         protected Long partitionLowerBound;
         protected Long partitionUpperBound;
@@ -111,9 +130,15 @@ public class JdbcReadOptions implements Serializable {
         protected int fetchSize = 0;
         protected boolean autoCommit = true;
 
+
         /** optional, SQL query statement for this JDBC source. */
         public Builder setQuery(String query) {
             this.query = query;
+            return this;
+        }
+
+        public Builder setQueryWhereCondition(String queryWhereCondition) {
+            this.queryWhereCondition = queryWhereCondition;
             return this;
         }
 
@@ -168,6 +193,18 @@ public class JdbcReadOptions implements Serializable {
                     numPartitions,
                     fetchSize,
                     autoCommit);
+        }
+
+        public JdbcReadOptions buildWhereCondition() {
+            return new JdbcReadOptions(
+                    query,
+                    partitionColumnName,
+                    partitionLowerBound,
+                    partitionUpperBound,
+                    numPartitions,
+                    fetchSize,
+                    autoCommit,
+                    queryWhereCondition);
         }
     }
 }
